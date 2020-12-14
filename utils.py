@@ -22,6 +22,16 @@ def parseYAML(yaml_file):
     with open(yaml_file) as file:
         return yaml.load(file, Loader=yaml.FullLoader)
 
+### Function to generate noise vector
+def noiseFunc(mu, sigma, batch_size, device):
+    """
+    Function to generate noise from Gaussian Distribution
+
+    Args:
+    mu, sigma : Mean and Standard Deviation for Normal Distribution
+    device    : GPU or CPU device
+    """
+    return torch.normal(mu, sigma, (batch_size, 128)).float().to(device)
 
 ### Loss Visualisation
 def plotLoss(losses, model_name, path='./'):
@@ -73,7 +83,7 @@ def plotPointCloud(object, model=None):
             point_cloud = torch.squeeze(point_cloud,0)
         
         if model is not None and 'Generator' in model.name:
-            noise = noiseFunc(0, 0.2, 1)
+            noise = noiseFunc(0, 0.2, 1, device)
             point_cloud = model(noise)
             point_cloud = torch.squeeze(point_cloud,0)
 
@@ -117,18 +127,18 @@ def saveModel(path, model, epoch):
 
 ### Check Loop
 def currEpoch(path):
-  """
-  Check the current epoch number. This is to continue training from the 
-  current epoch number
+    """
+    Check the current epoch number. This is to continue training from the 
+    current epoch number
 
-  Args:
-  path : path of model
-  """
-  list_dir = os.listdir(path)
-  
-  if len(list_dir) == 0:
-    return -1
-  
-  else:
-    list_dir = [int(i) for i in list_dir]
-    return max(list_dir)
+    Args:
+    path : path of model
+    """
+    list_dir = os.listdir(path)
+    
+    if len(list_dir) == 0:
+        return -1
+    
+    else:
+        list_dir = [int(i) for i in list_dir]
+        return max(list_dir)
