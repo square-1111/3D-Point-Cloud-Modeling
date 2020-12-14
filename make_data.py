@@ -1,8 +1,7 @@
 import os, torch
 import numpy as np
+
 from plyfile import PlyData, PlyElement
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 
 ## Mapping of object_id to objects
 id_object = {
@@ -70,55 +69,3 @@ class Data():
         return torch.from_numpy(np_point_cloud).float()
 
 
-
-def plotPointCloud(object, model=None):
-    """
-    Retrieve 4 random point clouds and plot interactive graphs  
-    """
-
-    # Layout for plot
-    fig = make_subplots(
-        rows=2, cols=2,
-        vertical_spacing=0.05,
-        horizontal_spacing=0.05,
-        specs=[[{'type': 'scatter3d'}, {'type': 'scatter3d'}],
-               [{'type': 'scatter3d'}, {'type': 'scatter3d'}]])
-    
-    objlst = Data(object)
-
-
-    for i in range(4):
-        point_cloud = objlst[np.random.randint(len(objlst))]
-
-        if model is not None and 'Autoencoder' in model.name:
-            point_cloud = model(point_cloud[None,:])
-            point_cloud = torch.squeeze(point_cloud,0)
-        
-        if model is not None and 'Generator' in model.name:
-            noise = noiseFunc(0, 0.2, 1)
-            point_cloud = model(noise)
-            point_cloud = torch.squeeze(point_cloud,0)
-
-
-        np_point_cloud = point_cloud.detach().cpu().numpy()
-        
-        fig.add_trace(
-            go.Scatter3d(x=np_point_cloud[:,0], 
-                        y=np_point_cloud[:,1], 
-                        z=np_point_cloud[:,2],
-                        mode='markers',
-                        marker=dict(size=1,
-                                    color=np_point_cloud[:,2],                
-                                    colorscale='Viridis',   
-                                    opacity=0.8
-                                    )),
-                        row=i//2 + 1, col=i%2 + 1
-                        )
-      
-    fig.update_layout(
-        showlegend=False,
-        height=800,
-        width=1500
-        )
-
-    fig.show()
